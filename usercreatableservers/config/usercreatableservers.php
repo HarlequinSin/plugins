@@ -1,0 +1,7 @@
+<?php
+
+return [
+    'database_limit' => env('UCS_DEFAULT_DATABASE_LIMIT', 0),
+    'allocation_limit' => env('UCS_DEFAULT_ALLOCATION_LIMIT', 0),
+    'backup_limit' => env('UCS_DEFAULT_BACKUP_LIMIT', 0),
+];

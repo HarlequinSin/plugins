@@ -1,0 +1,34 @@
+<?php
+
+use App\Models\Egg;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('products', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->unsignedInteger('cpu')->default(0);
+            $table->unsignedInteger('memory')->default(0);
+            $table->unsignedInteger('disk')->default(0);
+            $table->unsignedInteger('swap')->default(0);
+            $table->json('ports');
+            $table->json('tags');
+            $table->unsignedInteger('allocation_limit')->default(0);
+            $table->unsignedInteger('database_limit')->default(0);
+            $table->unsignedInteger('backup_limit')->default(0);
+            $table->foreignIdFor(Egg::class)->constrained()->cascadeOnDelete();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('products');
+    }
+};

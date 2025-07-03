@@ -1,0 +1,16 @@
+{
+    "id": "tickets",
+    "name": "Tickets",
+    "author": "Boy132",
+    "version": "1.0.0",
+    "description": "Simple ticket system",
+    "url": "https://github.com/Boy132/tickets",
+    "namespace": "Boy132\\Tickets",
+    "class": "TicketsPlugin",
+    "status": "enabled",
+    "status_message": null,
+    "panels": "admin,server",
+    "panel_version": null,
+    "category": "plugin",
+    "load_order": 0
+}

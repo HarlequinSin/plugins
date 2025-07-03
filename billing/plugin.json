@@ -1,0 +1,16 @@
+{
+    "id": "billing",
+    "name": "Billing",
+    "author": "Boy132",
+    "version": "1.0.0",
+    "description": "A simple billing plugin which allows users to purchase servers.",
+    "url": "https://github.com/Boy132/billing",
+    "namespace": "Boy132\\Billing",
+    "class": "BillingPlugin",
+    "status": "disabled",
+    "status_message": null,
+    "panels": "admin",
+    "panel_version": null,
+    "category": "plugin",
+    "load_order": 0
+}
