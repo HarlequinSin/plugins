@@ -2,19 +2,19 @@
 
 namespace Boy132\Billing\Filament\Admin\Resources\Products;
 
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Fieldset;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Boy132\Billing\Filament\Admin\Resources\Products\Pages\ListProducts;
 use Boy132\Billing\Filament\Admin\Resources\Products\Pages\CreateProduct;
 use Boy132\Billing\Filament\Admin\Resources\Products\Pages\EditProduct;
+use Boy132\Billing\Filament\Admin\Resources\Products\Pages\ListProducts;
 use Boy132\Billing\Models\Product;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Fieldset;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Number;

@@ -2,16 +2,16 @@
 
 namespace Boy132\PlayerCounter\Filament\Admin\Resources\GameQueries;
 
-use Filament\Actions\ViewAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Schemas\Schema;
 use Boy132\PlayerCounter\Filament\Admin\Resources\GameQueries\Pages\ManageGameQueries;
 use Boy132\PlayerCounter\Models\GameQuery;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 

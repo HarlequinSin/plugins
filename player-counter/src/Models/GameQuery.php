@@ -2,11 +2,11 @@
 
 namespace Boy132\PlayerCounter\Models;
 
-use Illuminate\Database\Eloquent\Collection;
 use App\Models\Allocation;
 use App\Models\Egg;
 use Exception;
 use GameQ\GameQ;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 

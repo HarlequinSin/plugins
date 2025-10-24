@@ -2,19 +2,19 @@
 
 namespace Boy132\Tickets\Filament\Server\Resources\Tickets;
 
-use Filament\Actions\ViewAction;
-use Filament\Schemas\Schema;
 use App\Filament\Admin\Resources\Users\Pages\EditUser;
 use App\Filament\Components\Tables\Columns\DateTimeColumn;
 use Boy132\Tickets\Enums\TicketCategory;
 use Boy132\Tickets\Enums\TicketPriority;
 use Boy132\Tickets\Filament\Server\Resources\Tickets\Pages\ManageTickets;
 use Boy132\Tickets\Models\Ticket;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Support\Markdown;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Grouping\Group;

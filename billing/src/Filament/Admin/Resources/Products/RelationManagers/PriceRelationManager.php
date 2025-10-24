@@ -2,16 +2,16 @@
 
 namespace Boy132\Billing\Filament\Admin\Resources\Products\RelationManagers;
 
-use Filament\Schemas\Schema;
-use Filament\Actions\CreateAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
 use Boy132\Billing\Enums\PriceInterval;
 use Boy132\Billing\Models\Product;
 use Boy132\Billing\Models\ProductPrice;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use NumberFormatter;

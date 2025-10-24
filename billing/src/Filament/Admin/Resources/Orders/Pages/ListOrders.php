@@ -2,11 +2,11 @@
 
 namespace Boy132\Billing\Filament\Admin\Resources\Orders\Pages;
 
-use Filament\Schemas\Components\Tabs\Tab;
 use Boy132\Billing\Enums\OrderStatus;
 use Boy132\Billing\Filament\Admin\Resources\Orders\OrderResource;
 use Boy132\Billing\Models\Order;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListOrders extends ListRecords

@@ -2,7 +2,6 @@
 
 namespace Boy132\UserCreatableServers\Filament\Server\Pages;
 
-use Filament\Schemas\Schema;
 use App\Filament\Server\Pages\ServerFormPage;
 use App\Models\Server;
 use App\Repositories\Daemon\DaemonServerRepository;
@@ -12,6 +11,7 @@ use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Schema;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Http\Client\ConnectionException;
 

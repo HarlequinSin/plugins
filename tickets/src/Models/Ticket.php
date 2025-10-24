@@ -2,13 +2,13 @@
 
 namespace Boy132\Tickets\Models;
 
-use Filament\Actions\Action;
 use App\Models\Server;
 use App\Models\User;
 use Boy132\Tickets\Enums\TicketCategory;
 use Boy132\Tickets\Enums\TicketPriority;
 use Boy132\Tickets\Filament\Server\Resources\TicketResource\Pages\ManageTickets;
 use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Support\Markdown;
 use Illuminate\Database\Eloquent\Model;

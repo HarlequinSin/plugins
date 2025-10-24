@@ -2,8 +2,8 @@
 
 namespace Boy132\Tickets\Filament\Components\Actions;
 
-use Filament\Actions\Action;
 use Boy132\Tickets\Models\Ticket;
+use Filament\Actions\Action;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Notifications\Notification;
 

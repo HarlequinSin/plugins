@@ -2,17 +2,17 @@
 
 namespace Boy132\Billing\Filament\Admin\Resources\Customers;
 
-use Filament\Schemas\Schema;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Boy132\Billing\Filament\Admin\Resources\Customers\Pages\ListCustomers;
+use App\Models\User;
 use Boy132\Billing\Filament\Admin\Resources\Customers\Pages\CreateCustomer;
 use Boy132\Billing\Filament\Admin\Resources\Customers\Pages\EditCustomer;
-use App\Models\User;
+use Boy132\Billing\Filament\Admin\Resources\Customers\Pages\ListCustomers;
 use Boy132\Billing\Models\Customer;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use NumberFormatter;

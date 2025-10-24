@@ -2,12 +2,12 @@
 
 namespace Boy132\Tickets\Filament\Server\Resources\Tickets\Pages;
 
-use Filament\Schemas\Components\Tabs\Tab;
 use Boy132\Tickets\Filament\Server\Resources\Tickets\TicketResource;
 use Boy132\Tickets\Models\Ticket;
 use Filament\Actions\CreateAction;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Schemas\Components\Tabs\Tab;
 use Illuminate\Database\Eloquent\Builder;
 
 class ManageTickets extends ManageRecords
