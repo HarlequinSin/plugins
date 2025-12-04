@@ -14,7 +14,5 @@
         "server"
     ],
     "panel_version": null,
-    "composer_packages": {
-        "cloudflare/sdk": "^1.4"
-    }
+    "composer_packages": null
 }
