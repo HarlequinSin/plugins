@@ -1,7 +1,6 @@
 <?php
 
 use Boy132\Billing\Enums\PriceInterval;
-use Boy132\Billing\Models\Product;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +16,10 @@ return new class extends Migration
             $table->float('cost', 2);
             $table->string('interval_type')->default(PriceInterval::Month);
             $table->unsignedInteger('interval_value')->default(1);
-            $table->foreignIdFor(Product::class)->constrained()->cascadeOnDelete();
+
+            $table->unsignedInteger('product_id');
+            $table->foreign('product_id')->references('id')->on('products')->cascadeOnDelete();
+
             $table->timestamps();
         });
     }
