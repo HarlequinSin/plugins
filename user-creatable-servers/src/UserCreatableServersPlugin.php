@@ -66,7 +66,7 @@ class UserCreatableServersPlugin implements HasPluginSettings, Plugin
             'UCS_DEFAULT_DATABASE_LIMIT' => $data['database_limit'],
             'UCS_DEFAULT_ALLOCATION_LIMIT' => $data['allocation_limit'],
             'UCS_DEFAULT_BACKUP_LIMIT' => $data['backup_limit'],
-            'UCS_CAN_USERS_UPDATE_SERVERS' => $data['can_users_update_servers'],
+            'UCS_CAN_USERS_UPDATE_SERVERS' => $data['can_users_update_servers'] ? 'true' : 'false',
         ]);
 
         Notification::make()
