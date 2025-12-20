@@ -54,7 +54,8 @@ Adds a button to the console for uploading console logs to [mclo.gs](https://mcl
 
 Allows to easily download minecraft mods & plugins from modrinth.
 
-Add `modrinth_mods` or `modrinth_plugins` to the features of your egg to enable the mod/ plugins page. Also make sure your egg has the `minecraft` tag and a tag for the mod loader, e.g. `paper` or `forge` or `fabric`.
+> [!IMPORTANT]
+> Add `modrinth_mods` or `modrinth_plugins` to the features of your egg to enable the mod/ plugins page. Also make sure your egg has the `minecraft` tag and a tag for the mod loader, e.g. `paper` or `forge` or `fabric`.
 
 ---
 
@@ -73,6 +74,9 @@ Adds a simple player counter to the console and a player list page. Uses a [Game
 
 > [!IMPORTANT]
 > You need to have the bz2 php extension and zip/ 7zip installed!
+
+> [!IMPORTANT]
+> For Minecraft servers you need to set `enable-query` to true and the `query-port` to your server port! (in `server.properties`)
 
 ---
 
@@ -133,3 +137,6 @@ Allows users to create tickets (per server) and admins to answer them.
 ### [User Creatable Servers](/user-creatable-servers) <sup><sub>by Boy132</sub></sup>
 
 Allows admins to assign resources to users. User can then create server themselves.
+
+> [!IMPORTANT]
+> Add `user_creatable_servers` as tag to the nodes that should be used for creating servers.
