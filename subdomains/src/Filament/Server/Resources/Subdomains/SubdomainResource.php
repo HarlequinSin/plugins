@@ -12,7 +12,6 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Facades\Filament;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -87,7 +86,8 @@ class SubdomainResource extends Resource
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->successNotification(null),
             ])
             ->toolbarActions([
                 CreateAction::make()
@@ -98,6 +98,7 @@ class SubdomainResource extends Resource
                     ->createAnother(false)
                     ->hiddenLabel()
                     ->iconButton()
+                    ->successNotification(null)
                     ->iconSize(IconSize::ExtraLarge),
             ]);
     }
@@ -116,11 +117,12 @@ class SubdomainResource extends Resource
                     ->required()
                     ->relationship('domain', 'name')
                     ->preload()
+                    ->default(fn () => CloudflareDomain::first()?->id ?? null)
                     ->searchable(),
                 Toggle::make('srv_record')
                     ->label(trans('subdomains::strings.srv_record'))
                     ->helperText(trans('subdomains::strings.srv_record_help'))
-                    ->disabled(fn (callable $get) => !$get('domain_id') || empty(CloudflareDomain::find($get('domain_id'))->srv_target ?? null))
+                    ->disabled(false) // TODO: Dynamically disable if domain missing srv_target
                     ->default(false),
             ]);
     }
