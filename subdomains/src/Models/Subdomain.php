@@ -129,6 +129,12 @@ class Subdomain extends Model implements HasLabel
                 if ($this->cloudflare_id !== $result['id']) {
                     $this->updateQuietly(['cloudflare_id' => $result['id']]);
                 }
+                
+                Notification::make()
+                    ->success()
+                    ->title('Cloudflare: Record updated')
+                    ->body('Successfully updated ' . $this->name . '.' . ($this->domain->name ?? 'unknown') . ' to '. $this->record_type)
+                    ->send();
             } else {
                 Log::error('Failed to upsert SRV record on Cloudflare for Subdomain ID ' . $this->id, ['result' => $result]);
 
@@ -144,6 +150,14 @@ class Subdomain extends Model implements HasLabel
 
         // A/AAAA
         if (!$this->server->allocation || $this->server->allocation->ip === '0.0.0.0' || $this->server->allocation->ip === '::') {
+            Log::warning('Server allocation missing or invalid IP', ['server_id' => $this->server_id]);
+
+            Notification::make()
+                ->danger()
+                ->title('Cloudflare: Missing IP')
+                ->body(sprintf('Server allocation IP is missing or invalid for %s.%s. Cannot upsert A/AAAA record.', $this->name, $this->domain->name ?? 'unknown'))
+                ->send();
+
             return;
         }
 
@@ -153,6 +167,12 @@ class Subdomain extends Model implements HasLabel
             if ($this->cloudflare_id !== $result['id']) {
                 $this->updateQuietly(['cloudflare_id' => $result['id']]);
             }
+
+            Notification::make()
+                ->success()
+                ->title('Cloudflare: Record updated')
+                ->body('Successfully updated ' . $this->name . '.' . ($this->domain->name ?? 'unknown') . ' to '. $this->record_type)
+                ->send();
         } else {
             Log::error('Failed to upsert record on Cloudflare for Subdomain ID ' . $this->id, ['result' => $result]);
 
