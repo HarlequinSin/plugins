@@ -81,13 +81,6 @@ class CloudflareService
                 ],
             ];
         } else {
-            $ip = $content ?? $target;
-
-            if (empty($ip)) {
-                Log::error('Cloudflare upsert missing IP/content for record type ' . $recordType, ['zone' => $zoneId, 'name' => $name, 'type' => $recordType]);
-                return ['success' => false, 'id' => null, 'errors' => ['missing_ip' => true], 'status' => 0, 'body' => null];
-            }
-
             $payload = [
                 'name' => $name,
                 'ttl' => $ttl,
@@ -124,17 +117,6 @@ class CloudflareService
             Log::error('Cloudflare upsert exception: ' . $e->getMessage(), ['zone' => $zoneId, 'payload' => $payload]);
             return ['success' => false, 'id' => null, 'errors' => ['exception' => $e->getMessage()], 'status' => 0, 'body' => null];
         }
-    }
-
-
-    protected function parseCloudflareResponse(array $response): array
-    {
-        return [
-            'success' => !empty($response['success']),
-            'id' => $response['result']['id'] ?? null,
-            'result' => $response['result'] ?? null,
-            'errors' => $response['errors'] ?? [],
-        ];
     }
 
     protected function parseCloudflareHttpResponse(Response $response): array

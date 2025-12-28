@@ -42,38 +42,15 @@ class Subdomain extends Model implements HasLabel
         parent::boot();
 
         static::saving(function (self $model) {
-            // If srv_record provided in the payload, ensure record_type follows it and then remove it
             if (array_key_exists('srv_record', $model->attributes)) {
-                $srv = (bool) $model->attributes['srv_record'];
-
-                if ($srv) {
-                    $model->attributes['record_type'] = 'SRV';
-                } else {
-                    if ($model->server && $model->server->allocation && is_ipv6($model->server->allocation->ip)) {
-                        $model->attributes['record_type'] = 'AAAA';
-                    } else {
-                        $model->attributes['record_type'] = 'A';
-                    }
-                }
-
+                $model->setRecordType($model->attributes['srv_record']);
                 unset($model->attributes['srv_record']);
             }
 
-            // If no record_type is present, set a sensible default based on server allocation
-            if (!isset($model->attributes['record_type'])) {
-                if ($model->server && $model->server->allocation && is_ipv6($model->server->allocation->ip)) {
-                    $model->attributes['record_type'] = 'AAAA';
-                } else {
-                    $model->attributes['record_type'] = 'A';
-                }
-            }
-        });
-
-        static::saved(function (self $model) {
             $model->upsertOnCloudflare();
         });
 
-        static::deleted(function (self $model) {
+        static::deleting(function (self $model) {
             $model->deleteOnCloudflare();
         });
     }
@@ -98,9 +75,7 @@ class Subdomain extends Model implements HasLabel
         return $this->record_type === 'SRV';
     }
 
-
-
-    public function setSrvRecordAttribute($value): void
+    public function setRecordType($value): void
     {
         if ($value) {
             $this->attributes['record_type'] = 'SRV';
