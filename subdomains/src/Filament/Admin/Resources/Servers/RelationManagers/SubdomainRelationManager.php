@@ -12,6 +12,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -83,8 +84,10 @@ class SubdomainRelationManager extends RelationManager
                     ->relationship('domain', 'name')
                     ->preload()
                     ->searchable(),
-                Hidden::make('record_type')
-                    ->default(fn () => is_ipv6($this->getOwnerRecord()->allocation->ip) ? 'AAAA' : 'A'),
+                Toggle::make('srv_record')
+                    ->label(trans('subdomains::strings.srv_record'))
+                    ->helperText(trans('subdomains::strings.srv_record_help'))
+                    ->default(false),
             ]);
     }
 }

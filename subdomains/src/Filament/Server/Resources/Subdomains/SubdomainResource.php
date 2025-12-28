@@ -15,10 +15,12 @@ use Filament\Facades\Filament;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 
 class SubdomainResource extends Resource
@@ -78,6 +80,9 @@ class SubdomainResource extends Resource
                 TextColumn::make('label')
                     ->label(trans('subdomains::strings.name'))
                     ->state(fn (Subdomain $subdomain) => $subdomain->getLabel()),
+                ToggleColumn::make('srv_record')
+                    ->label(trans('subdomains::strings.srv_record'))
+                    ->tooltip(trans('subdomains::strings.srv_record_help')),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -111,13 +116,10 @@ class SubdomainResource extends Resource
                     ->relationship('domain', 'name')
                     ->preload()
                     ->searchable(),
-                Hidden::make('record_type')
-                    ->default(function () {
-                        /** @var Server $server */
-                        $server = Filament::getTenant();
-
-                        return is_ipv6($server->allocation->ip) ? 'AAAA' : 'A';
-                    }),
+                Toggle::make('srv_record')
+                    ->label(trans('subdomains::strings.srv_record'))
+                    ->helperText(trans('subdomains::strings.srv_record_help'))
+                    ->default(false),
             ]);
     }
 
