@@ -20,6 +20,17 @@ return [
     'srv_target' => 'SRV Target',
     'srv_target_help' => 'The hostname that SRV records point to (for example: play.example.com).',
 
+    'errors' => [
+        'srv_target_missing' => 'Cannot enable SRV record because the selected domain does not have an SRV target set.',
+    ],
+
     'api_token' => 'Cloudflare API Token',
     'api_token_help' => 'The token needs to have read permissions for Zone.Zone and write for Zone.Dns. For better security you can also set the "Zone Resources" to exclude certain domains and add the panel ip to the "Client IP Adress Filtering".',
+
+    'notifications' => [
+        'dns_created' => 'DNS record created on Cloudflare',
+        'dns_updated' => 'DNS record updated on Cloudflare',
+        'dns_deleted' => 'DNS record deleted from Cloudflare',
+        'dns_action_failed' => 'Cloudflare DNS action failed',
+    ],
 ];

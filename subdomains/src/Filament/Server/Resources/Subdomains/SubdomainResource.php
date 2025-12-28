@@ -82,7 +82,8 @@ class SubdomainResource extends Resource
                     ->state(fn (Subdomain $subdomain) => $subdomain->getLabel()),
                 ToggleColumn::make('srv_record')
                     ->label(trans('subdomains::strings.srv_record'))
-                    ->tooltip(trans('subdomains::strings.srv_record_help')),
+                    ->tooltip(fn (Subdomain $record) => $record->domain && $record->domain->srv_target ? trans('subdomains::strings.srv_record_help') : trans('subdomains::strings.errors.srv_target_missing'))
+                    ->disabled(fn (Subdomain $record) => !$record->domain || empty($record->domain->srv_target)),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -119,6 +120,7 @@ class SubdomainResource extends Resource
                 Toggle::make('srv_record')
                     ->label(trans('subdomains::strings.srv_record'))
                     ->helperText(trans('subdomains::strings.srv_record_help'))
+                    ->disabled(fn (callable $get) => !$get('domain_id') || empty(CloudflareDomain::find($get('domain_id'))->srv_target ?? null))
                     ->default(false),
             ]);
     }
