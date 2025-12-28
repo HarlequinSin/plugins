@@ -135,7 +135,6 @@ class CloudflareService
         ];
     }
 
-
     public function deleteDnsRecord(string $zoneId, string $recordId): array
     {
         if (empty($zoneId) || empty($recordId)) {

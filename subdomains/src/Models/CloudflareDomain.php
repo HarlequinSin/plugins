@@ -2,11 +2,10 @@
 
 namespace Boy132\Subdomains\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Http;
 use Boy132\Subdomains\Services\CloudflareService;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -35,16 +34,16 @@ class CloudflareDomain extends Model
                     ->title('Failed to fetch Cloudflare Zone ID for domain: ' . $model->name)
                     ->danger()
                     ->send();
+            } else {
+                Notification::make()
+                    ->title('Successfully saved domain: ' . $model->name)
+                    ->success()
+                    ->send();
+
+                $model->update([
+                    'cloudflare_id' => $zoneId,
+                ]);
             }
-
-            Notification::make()
-                ->title('Successfully saved domain: ' . $model->name)
-                ->success()
-                ->send();
-
-            $model->update([
-                'cloudflare_id' => $zoneId,
-            ]);
         });
     }
 
