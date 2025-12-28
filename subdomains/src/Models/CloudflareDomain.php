@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Http;
  * @property int $id
  * @property string $name
  * @property ?string $cloudflare_id
+ * @property ?string $srv_target
  */
 class CloudflareDomain extends Model
 {
     protected $fillable = [
         'name',
         'cloudflare_id',
+        'srv_target',
     ];
 
     protected static function boot(): void
