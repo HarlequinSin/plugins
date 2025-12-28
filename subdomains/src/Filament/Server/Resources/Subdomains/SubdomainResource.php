@@ -85,7 +85,7 @@ class SubdomainResource extends Resource
                     ->disabled(fn (Subdomain $record) => !$record->domain || empty($record->domain->srv_target)),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
                     ->successNotification(null),
                 DeleteAction::make()
                     ->successNotification(null),

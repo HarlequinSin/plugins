@@ -128,7 +128,7 @@ class Subdomain extends Model implements HasLabel
                 if ($this->cloudflare_id !== $result['id']) {
                     $this->updateQuietly(['cloudflare_id' => $result['id']]);
                 }
-                
+
                 Notification::make()
                     ->success()
                     ->title(trans('subdomains::strings.notifications.cloudflare_record_updated_title'))
@@ -199,7 +199,6 @@ class Subdomain extends Model implements HasLabel
                     ->title(trans('subdomains::strings.notifications.cloudflare_delete_success_title'))
                     ->body(trans('subdomains::strings.notifications.cloudflare_delete_success', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown')]))
                     ->send();
-                return;
             } else {
                 Notification::make()
                     ->danger()
@@ -207,6 +206,8 @@ class Subdomain extends Model implements HasLabel
                     ->body(trans('subdomains::strings.notifications.cloudflare_delete_failed', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown'), 'errors' => json_encode($result['errors'] ?? $result['body'] ?? [])]))
                     ->send();
             }
+
+            return;
         }
     }
 }

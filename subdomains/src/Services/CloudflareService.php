@@ -38,14 +38,7 @@ class CloudflareService
         return null;
     }
 
-    public function upsertDnsRecord(
-        string $zoneId,
-        string $name,
-        string $recordType,
-        string $target,
-        ?string $recordId = null,
-        ?int $port = null,
-    ): array
+    public function upsertDnsRecord(string $zoneId, string $name, string $recordType, string $target, ?string $recordId = null, ?int $port = null): array
     {
         if (empty($zoneId) || empty($name) || empty($recordType)) {
             Log::error('Cloudflare upsertDnsRecord missing required parameters', ['zone' => $zoneId, 'name' => $name, 'type' => $recordType]);
