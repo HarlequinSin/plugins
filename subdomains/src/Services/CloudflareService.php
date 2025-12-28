@@ -2,9 +2,9 @@
 
 namespace Boy132\Subdomains\Services;
 
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Client\Response;
 
 class CloudflareService
 {

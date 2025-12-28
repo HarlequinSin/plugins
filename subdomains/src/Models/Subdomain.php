@@ -3,14 +3,13 @@
 namespace Boy132\Subdomains\Models;
 
 use App\Models\Server;
+use Boy132\Subdomains\Services\CloudflareService;
+use Filament\Notifications\Notification;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Filament\Notifications\Notification;
-use Boy132\Subdomains\Services\CloudflareService;
 
 /**
  * @property int $id
