@@ -38,46 +38,12 @@ class CloudflareService
         return null;
     }
 
-    public function getDnsRecordId(string $zoneId, string $name, string $type): ?string
-    {
-        if (empty($zoneId) || empty($name)) {
-            return null;
-        }
-
-        try {
-            $queryParams = [
-                'name' => $name,
-                'type' => $type,
-                'per_page' => 1,
-            ];
-
-            $response = Http::cloudflare()->get("zones/{$zoneId}/dns_records");
-        } catch (\Throwable $e) {
-            Log::error('Cloudflare getDnsRecordId request failed: ' . $e->getMessage(), ['zone' => $zoneId, 'name' => $name, 'type' => $type]);
-            return null;
-        }
-
-        log::warning('record response: '.$response); // !remove
-        log::warning($payload); // !remove
-        $status = $response->status();
-        $body = $response->json() ?? [];
-
-        if ($response->successful() && !empty($body['result']) && count($body['result']) > 0) {
-            return $body['result'][0]['id'] ?? null;
-        }
-
-        if (!empty($body['errors'])) {
-            Log::warning('Cloudflare getDnsRecordId returned errors', ['zone' => $zoneId, 'name' => $name, 'type' => $type, 'status' => $status, 'errors' => $body['errors']]);
-        }
-
-        return null;
-    }
-
     public function upsertDnsRecord(
         string $zoneId,
         string $name,
         string $recordType,
         string $target,
+        ?string $recordId = null,
         ?int $port = null,
     ): array
     {
@@ -132,18 +98,16 @@ class CloudflareService
             ];
         }
 
-        $existingId = $this->findDnsRecordId($zoneId, $payload['name'], $payload['type']);
-
         try {
-            if ($existingId) {
-                $response = Http::cloudflare()->put("zones/{$zoneId}/dns_records/{$existingId}", $payload);
+            if ($recordId) {
+                $response = Http::cloudflare()->put("zones/{$zoneId}/dns_records/{$recordId}", $payload);
                 $parsed = $this->parseCloudflareHttpResponse($response);
 
                 if ($parsed['success']) {
                     return $parsed;
                 }
 
-                Log::error('Cloudflare update failed', ['zone' => $zoneId, 'id' => $existingId, 'response' => $parsed]);
+                Log::error('Cloudflare update failed', ['zone' => $zoneId, 'recordId' => $recordId, 'response' => $parsed]);
                 return $parsed;
             }
 
