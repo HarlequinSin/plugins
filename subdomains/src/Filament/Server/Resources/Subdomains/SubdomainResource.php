@@ -81,11 +81,12 @@ class SubdomainResource extends Resource
                     ->state(fn (Subdomain $subdomain) => $subdomain->getLabel()),
                 ToggleColumn::make('srv_record')
                     ->label(trans('subdomains::strings.srv_record'))
-                    ->tooltip(fn (Subdomain $record) => $record->domain && $record->domain->srv_target ? trans('subdomains::strings.srv_record_help') : trans('subdomains::strings.errors.srv_target_missing'))
+                    ->tooltip(fn (Subdomain $record) => $record->domain && $record->domain->srv_target ? trans('subdomains::strings.srv_record_help') : trans('subdomains::strings.srv_target_missing'))
                     ->disabled(fn (Subdomain $record) => !$record->domain || empty($record->domain->srv_target)),
             ])
             ->recordActions([
                 EditAction::make(),
+                    ->successNotification(null),
                 DeleteAction::make()
                     ->successNotification(null),
             ])

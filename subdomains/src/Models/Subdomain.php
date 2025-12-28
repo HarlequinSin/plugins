@@ -99,8 +99,8 @@ class Subdomain extends Model implements HasLabel
 
             Notification::make()
                 ->danger()
-                ->title('Cloudflare: Missing Zone ID')
-                ->body(sprintf('Cloudflare zone ID is not configured for %s. Cannot upsert DNS record for %s.%s.', $this->domain->name ?? 'unknown', $this->name, $this->domain->name ?? 'unknown'))
+                ->title(trans('subdomains::strings.notifications.cloudflare_missing_zone_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_missing_zone', ['domain' => $this->domain->name ?? 'unknown', 'subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown')]))
                 ->send();
 
             return;
@@ -115,8 +115,8 @@ class Subdomain extends Model implements HasLabel
 
                 Notification::make()
                     ->danger()
-                    ->title('Cloudflare: Missing SRV Port')
-                    ->body(sprintf('SRV target or port is missing for %s.%s. Cannot upsert SRV record.', $this->name, $this->domain->name ?? 'unknown'))
+                    ->title(trans('subdomains::strings.notifications.cloudflare_missing_srv_port_title'))
+                    ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_port', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown')]))
                     ->send();
 
                 return;
@@ -131,16 +131,16 @@ class Subdomain extends Model implements HasLabel
                 
                 Notification::make()
                     ->success()
-                    ->title('Cloudflare: Record updated')
-                    ->body('Successfully updated ' . $this->name . '.' . ($this->domain->name ?? 'unknown') . ' to '. $this->record_type)
+                    ->title(trans('subdomains::strings.notifications.cloudflare_record_updated_title'))
+                    ->body(trans('subdomains::strings.notifications.cloudflare_record_updated', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown'), 'record_type' => $this->record_type]))
                     ->send();
             } else {
                 Log::error('Failed to upsert SRV record on Cloudflare for Subdomain ID ' . $this->id, ['result' => $result]);
 
                 Notification::make()
                     ->danger()
-                    ->title('Cloudflare: SRV upsert failed')
-                    ->body('Failed to upsert SRV record for ' . $this->name . '.' . ($this->domain->name ?? 'unknown') . '. See logs for details. Errors: ' . json_encode($result['errors'] ?? $result['body'] ?? []))
+                    ->title(trans('subdomains::strings.notifications.cloudflare_srv_upsert_failed_title'))
+                    ->body(trans('subdomains::strings.notifications.cloudflare_srv_upsert_failed', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown'), 'errors' => json_encode($result['errors'] ?? $result['body'] ?? [])]))
                     ->send();
             }
 
@@ -153,8 +153,8 @@ class Subdomain extends Model implements HasLabel
 
             Notification::make()
                 ->danger()
-                ->title('Cloudflare: Missing IP')
-                ->body(sprintf('Server allocation IP is missing or invalid for %s.%s. Cannot upsert A/AAAA record.', $this->name, $this->domain->name ?? 'unknown'))
+                ->title(trans('subdomains::strings.notifications.cloudflare_missing_ip_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_missing_ip', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown')]))
                 ->send();
 
             return;
@@ -169,8 +169,8 @@ class Subdomain extends Model implements HasLabel
 
             Notification::make()
                 ->success()
-                ->title('Cloudflare: Record updated')
-                ->body('Successfully updated ' . $this->name . '.' . ($this->domain->name ?? 'unknown') . ' to '. $this->record_type)
+                ->title(trans('subdomains::strings.notifications.cloudflare_record_updated_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_record_updated', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown'), 'record_type' => $this->record_type]))
                 ->send();
         } else {
             Log::error('Failed to upsert record on Cloudflare for Subdomain ID ' . $this->id, ['result' => $result]);
@@ -180,8 +180,8 @@ class Subdomain extends Model implements HasLabel
 
             Notification::make()
                 ->danger()
-                ->title('Cloudflare: Upsert failed')
-                ->body('Failed to upsert record for ' . $sub . '. See logs for details. Errors: ' . json_encode($result['errors'] ?? $result['body'] ?? []))
+                ->title(trans('subdomains::strings.notifications.cloudflare_upsert_failed_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_upsert_failed', ['subdomain' => $sub, 'errors' => json_encode($result['errors'] ?? $result['body'] ?? [])]))
                 ->send();
         }
     }
@@ -195,16 +195,17 @@ class Subdomain extends Model implements HasLabel
 
             if (!empty($result['success'])) {
                 Notification::make()
-                    ->danger()
-                    ->title('Cloudflare: Delete successed')
-                    ->body('Successfully deleted Cloudflare record for ' . $this->name . '.' . ($this->domain->name ?? 'unknown') . '.')
+                    ->success()
+                    ->title(trans('subdomains::strings.notifications.cloudflare_delete_success_title'))
+                    ->body(trans('subdomains::strings.notifications.cloudflare_delete_success', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown')]))
                     ->send();
+                return;
             }
 
             Notification::make()
                 ->danger()
-                ->title('Cloudflare: Delete failed')
-                ->body('Failed to delete Cloudflare record for ' . $this->name . '.' . ($this->domain->name ?? 'unknown') . '. See logs for details. Errors: ' . json_encode($result['errors'] ?? $result['body'] ?? []))
+                ->title(trans('subdomains::strings.notifications.cloudflare_delete_failed_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_delete_failed', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown'), 'errors' => json_encode($result['errors'] ?? $result['body'] ?? [])]))
                 ->send();
         }
     }

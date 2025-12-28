@@ -31,12 +31,12 @@ class CloudflareDomain extends Model
             $zoneId = $service->getZoneId($model->name);
             if (!$zoneId) {
                 Notification::make()
-                    ->title('Failed to fetch Cloudflare Zone ID for domain: ' . $model->name)
+                    ->title(trans('subdomains::strings.notifications.cloudflare_zone_fetch_failed', ['domain' => $model->name]))
                     ->danger()
                     ->send();
             } else {
                 Notification::make()
-                    ->title('Successfully saved domain: ' . $model->name)
+                    ->title(trans('subdomains::strings.notifications.cloudflare_domain_saved', ['domain' => $model->name]))
                     ->success()
                     ->send();
 
