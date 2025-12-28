@@ -5,6 +5,8 @@ namespace Boy132\Subdomains\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Http;
+use Boy132\Subdomains\Services\CloudflareService;
+use Filament\Notifications\Notification;
 
 /**
  * @property int $id
@@ -25,29 +27,29 @@ class CloudflareDomain extends Model
         parent::boot();
 
         static::created(function (self $model) {
-            $model->fetchCloudflareId();
+            $service = new CloudflareService();
+
+            $zoneId = $service->getZoneId($model->name);
+            if (!$zoneId) {
+                Notification::make()
+                    ->title('Failed to fetch Cloudflare Zone ID for domain: ' . $model->name)
+                    ->danger()
+                    ->send();
+            }
+
+            Notification::make()
+                ->title('Successfully saved domain: ' . $model->name)
+                ->success()
+                ->send();
+
+            $model->update([
+                'cloudflare_id' => $zoneId,
+            ]);
         });
     }
 
     public function subdomains(): HasMany
     {
         return $this->hasMany(Subdomain::class, 'domain_id');
-    }
-
-    public function fetchCloudflareId(): void
-    {
-        $response = Http::cloudflare()->get('zones', [
-            'name' => $this->name,
-        ])->json();
-
-        if ($response['success']) {
-            $zones = $response['result'];
-
-            if (count($zones) > 0) {
-                $this->update([
-                    'cloudflare_id' => $zones[0]['id'],
-                ]);
-            }
-        }
     }
 }

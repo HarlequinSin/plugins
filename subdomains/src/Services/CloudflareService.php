@@ -8,20 +8,19 @@ use Illuminate\Http\Client\Response;
 
 class CloudflareService
 {
-    public function findDnsRecordId(string $zoneId, string $name, string $type): ?string
+    public function getZoneId(string $domainName): ?string
     {
-        if (empty($zoneId)) {
+        if (empty($domainName)) {
+            Log::error('Cloudflare getZoneId called with empty domain name', ['domain' => $domainName]);
             return null;
         }
 
         try {
-            $response = Http::cloudflare()->get("zones/{$zoneId}/dns_records", [
-                'name' => $name,
-                'type' => $type,
-                'per_page' => 1,
+            $response = Http::cloudflare()->get('zones', [
+                'name' => $domainName,
             ]);
         } catch (\Throwable $e) {
-            Log::error('Cloudflare findDnsRecordId request failed: ' . $e->getMessage(), ['zone' => $zoneId, 'name' => $name, 'type' => $type]);
+            Log::error('Cloudflare getZoneId request failed: ' . $e->getMessage(), ['domain' => $domainName]);
             return null;
         }
 
@@ -33,7 +32,42 @@ class CloudflareService
         }
 
         if (!empty($body['errors'])) {
-            Log::warning('Cloudflare findDnsRecordId returned errors', ['zone' => $zoneId, 'name' => $name, 'type' => $type, 'status' => $status, 'errors' => $body['errors']]);
+            Log::warning('Cloudflare getZoneId returned errors', ['domain' => $domainName, 'status' => $status, 'errors' => $body['errors']]);
+        }
+
+        return null;
+    }
+
+    public function getDnsRecordId(string $zoneId, string $name, string $type): ?string
+    {
+        if (empty($zoneId) || empty($name)) {
+            return null;
+        }
+
+        try {
+            $queryParams = [
+                'name' => $name,
+                'type' => $type,
+                'per_page' => 1,
+            ];
+
+            $response = Http::cloudflare()->get("zones/{$zoneId}/dns_records");
+        } catch (\Throwable $e) {
+            Log::error('Cloudflare getDnsRecordId request failed: ' . $e->getMessage(), ['zone' => $zoneId, 'name' => $name, 'type' => $type]);
+            return null;
+        }
+
+        log::warning('record response: '.$response); // !remove
+        log::warning($payload); // !remove
+        $status = $response->status();
+        $body = $response->json() ?? [];
+
+        if ($response->successful() && !empty($body['result']) && count($body['result']) > 0) {
+            return $body['result'][0]['id'] ?? null;
+        }
+
+        if (!empty($body['errors'])) {
+            Log::warning('Cloudflare getDnsRecordId returned errors', ['zone' => $zoneId, 'name' => $name, 'type' => $type, 'status' => $status, 'errors' => $body['errors']]);
         }
 
         return null;
