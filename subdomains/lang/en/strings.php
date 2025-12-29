@@ -39,13 +39,13 @@ return [
         'cloudflare_missing_zone' => 'Cloudflare zone ID is not configured for :domain. Cannot upsert DNS record for :subdomain.',
 
         'cloudflare_missing_srv_port_title' => 'Cloudflare: Missing SRV Port',
-        'cloudflare_missing_srv_port' => 'SRV target or port is missing for :subdomain. Cannot upsert SRV record.',
+        'cloudflare_missing_srv_port' => 'SRV port is missing for :subdomain. Cannot upsert SRV record.',
 
         'cloudflare_missing_srv_target_title' => 'Cloudflare: Missing SRV Target',
         'cloudflare_missing_srv_target' => 'SRV target is missing for :subdomain. Cannot upsert SRV record.',
 
         'cloudflare_record_updated_title' => 'Cloudflare: Record updated',
-        'cloudflare_record_updated' => 'Successfully updated :subdomain to :record_type',
+        'cloudflare_record_updated' => 'Successfully updated :subdomain record to :record_type',
 
         'cloudflare_srv_upsert_failed_title' => 'Cloudflare: SRV upsert failed',
         'cloudflare_srv_upsert_failed' => 'Failed to upsert SRV record for :subdomain. See logs for details. Errors: :errors',
