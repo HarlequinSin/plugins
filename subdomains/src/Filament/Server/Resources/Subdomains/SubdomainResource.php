@@ -123,7 +123,7 @@ class SubdomainResource extends Resource
                 Toggle::make('srv_record')
                     ->label(trans('subdomains::strings.srv_record'))
                     ->helperText(trans('subdomains::strings.srv_record_help'))
-                    ->disabled(false) // TODO: Dynamically disable if domain missing srv_target
+                    ->disabled(fn (callable $get, ?Subdomain $record = null) => (empty($get('domain_id')) || empty(CloudflareDomain::find($get('domain_id'))?->srv_target)))
                     ->default(false),
             ]);
     }
