@@ -37,24 +37,24 @@ return [
         'cloudflare_missing_srv_target_title' => 'Cloudflare: Missing SRV Target',
         'cloudflare_missing_srv_target' => 'SRV target is missing for :subdomain. Cannot save SRV record.',
 
-        'cloudflare_record_updated_title' => 'Cloudflare: Record updated',
+        'cloudflare_record_updated_title' => 'Cloudflare: Record Updated',
         'cloudflare_record_updated' => 'Successfully updated :subdomain record to :record_type',
 
         'cloudflare_missing_ip_title' => 'Cloudflare: Missing IP',
         'cloudflare_missing_ip' => 'Server allocation IP is missing or invalid for :subdomain. Cannot save A/AAAA record.',
 
-        'cloudflare_upsert_failed_title' => 'Cloudflare: Save failed',
+        'cloudflare_upsert_failed_title' => 'Cloudflare: Save Failed',
         'cloudflare_upsert_failed' => 'Failed to save record for :subdomain. See logs for details. Errors: :errors',
 
-        'cloudflare_delete_success_title' => 'Cloudflare: Record deleted',
+        'cloudflare_delete_success_title' => 'Cloudflare: Record Deleted',
         'cloudflare_delete_success' => 'Successfully deleted Cloudflare record for :subdomain.',
 
-        'cloudflare_delete_failed_title' => 'Cloudflare: Delete failed',
+        'cloudflare_delete_failed_title' => 'Cloudflare: Delete Failed',
         'cloudflare_delete_failed' => 'Failed to delete Cloudflare record for :subdomain. See logs for details. Errors: :errors',
 
         'cloudflare_zone_fetch_failed' => 'Failed to fetch Cloudflare Zone ID for domain: :domain',
         'cloudflare_domain_saved' => 'Successfully saved domain: :domain',
-        
+
         'settings_saved' => 'Settings saved',
     ],
 ];
