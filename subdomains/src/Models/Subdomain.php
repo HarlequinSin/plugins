@@ -122,6 +122,18 @@ class Subdomain extends Model implements HasLabel
                 return;
             }
 
+            if (empty($this->domain->srv_target)) {
+                Log::warning('Domain missing SRV target for SRV record', ['domain_id' => $this->domain_id]);
+
+                Notification::make()
+                    ->danger()
+                    ->title(trans('subdomains::strings.notifications.cloudflare_missing_srv_target_title'))
+                    ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_target', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown')]))
+                    ->send();
+
+                return;
+            }
+
             $result = $service->upsertDnsRecord($zoneId, $this->name, 'SRV', $this->domain->srv_target, $this->cloudflare_id ?? null, $port);
 
             if ($result['success'] && !empty($result['id'])) {

@@ -41,6 +41,9 @@ return [
         'cloudflare_missing_srv_port_title' => 'Cloudflare: Missing SRV Port',
         'cloudflare_missing_srv_port' => 'SRV target or port is missing for :subdomain. Cannot upsert SRV record.',
 
+        'cloudflare_missing_srv_target_title' => 'Cloudflare: Missing SRV Target',
+        'cloudflare_missing_srv_target' => 'SRV target is missing for :subdomain. Cannot upsert SRV record.',
+
         'cloudflare_record_updated_title' => 'Cloudflare: Record updated',
         'cloudflare_record_updated' => 'Successfully updated :subdomain to :record_type',
 
