@@ -3,6 +3,7 @@
 namespace Boy132\Subdomains;
 
 use App\Contracts\Plugins\HasPluginSettings;
+use App\Filament\Admin\Resources\Servers\ServerResource;
 use App\Traits\EnvironmentWriterTrait;
 use Boy132\Subdomains\Filament\Admin\Resources\Servers\RelationManagers\SubdomainRelationManager;
 use Filament\Contracts\Plugin;
@@ -40,6 +41,11 @@ class SubdomainsPlugin implements HasPluginSettings, Plugin
                 ->hintIcon('tabler-question-mark')
                 ->hintIconTooltip(trans('subdomains::strings.api_token_help'))
                 ->default(fn () => config('subdomains.token')),
+            TextInput::make('defaultSubdomainLimit')
+                ->label(trans('subdomains::strings.default_subdomain_limit'))
+                ->integer()
+                ->minValue(0)
+                ->default(fn () => config('subdomains.defaultSubdomainLimit')),
         ];
     }
 
@@ -47,6 +53,7 @@ class SubdomainsPlugin implements HasPluginSettings, Plugin
     {
         $this->writeToEnvironment([
             'CLOUDFLARE_TOKEN' => $data['token'],
+            'DEFAULT_SUBDOMAIN_LIMIT' => $data['defaultSubdomainLimit']
         ]);
 
         Notification::make()

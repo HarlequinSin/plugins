@@ -20,6 +20,8 @@ class ChangeLimitAction extends Action
 
         $this->label(fn () => trans('subdomains::strings.subdomain_change_limit'));
 
+        $this->icon('tabler-world-www');
+
         $this->schema(function (?Server $server) {
             return [
                 TextInput::make('limit')

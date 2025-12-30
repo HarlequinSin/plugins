@@ -6,6 +6,7 @@ return [
 
     'no_subdomains' => 'No Subdomains',
     'subdomain' => 'Subdomain|Subdomains',
+    'default_subdomain_limit' => 'Default Subdomain Limit',
     'subdomain_limit' => 'Subdomain Limit',
     'subdomain_change_limit' => 'Change Subdomain Limit',
     'subdomain_limit_changed' => 'Subdomain Limit changed',
