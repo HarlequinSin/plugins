@@ -385,14 +385,6 @@ class EditNode extends BaseEditNode
                                         ->warning()
                                         ->send();
 
-                                    // Update all subdomains on servers linked to this node
-                                    $serverIds = Server::where('node_id', $this->record->id)->pluck('id');
-                                    Log::info('Updating subdomains for Node ID ', ['node_id' => $this->record->id, 'serverIds' => $serverIds]);
-
-                                    foreach ($serverIds as $serverId) {
-                                        UpdateServerSubdomains::dispatch($serverId, $state);
-                                    }
-
                                     return $state;
                                 }),
                             Grid::make()
