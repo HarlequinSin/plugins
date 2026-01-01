@@ -36,16 +36,13 @@ class Subdomain extends Model implements HasLabel
         'srv_record' => 'boolean',
     ];
 
+    protected $appends = [
+        'srv_record',
+    ];
+
     protected static function boot(): void
     {
         parent::boot();
-
-        static::saving(function (self $model) {
-            if (array_key_exists('srv_record', $model->attributes)) {
-                $model->setRecordType($model->attributes['srv_record']);
-                unset($model->attributes['srv_record']);
-            }
-        });
 
         static::saved(function (self $model) {
             $model->upsertOnCloudflare();
@@ -76,12 +73,13 @@ class Subdomain extends Model implements HasLabel
         return $this->record_type === 'SRV';
     }
 
-    public function setRecordType($value): void
+    public function setSrvRecordAttribute($isSrvRecord): void
     {
-        if ($value) {
+        if ($isSrvRecord) {
             $this->attributes['record_type'] = 'SRV';
         } else {
-            if ($this->server && $this->server->allocation && is_ipv6($this->server->allocation->ip)) {
+            $ip = $this->server?->allocation?->ip ?? null;
+            if (!empty($ip) && filter_var($ip, FILTER_FLAG_IPV6)) {
                 $this->attributes['record_type'] = 'AAAA';
             } else {
                 $this->attributes['record_type'] = 'A';
