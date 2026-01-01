@@ -91,7 +91,7 @@ class Subdomain extends Model implements HasLabel
 
     protected function upsertOnCloudflare(): void
     {
-        $service = app(CloudflareService::class);
+        $registrar = app(CloudflareService::class);
 
         $zoneId = $this->domain->cloudflare_id;
         if (empty($zoneId)) {
@@ -106,13 +106,12 @@ class Subdomain extends Model implements HasLabel
             return;
         }
 
-        // SRV: target comes from domain, port from server allocation
+        // SRV: target comes from node, port from server allocation
         if ($this->record_type === 'SRV') {
             $port = $this->server && $this->server->allocation ? ($this->server->allocation->port ?? null) : null;
 
             if (empty($port)) {
                 Log::warning('Server missing allocation with port', $this->toArray());
-
                 Notification::make()
                     ->danger()
                     ->title(trans('subdomains::strings.notifications.cloudflare_missing_srv_port_title'))
@@ -122,19 +121,32 @@ class Subdomain extends Model implements HasLabel
                 return;
             }
 
-            if (empty($this->domain->srv_target)) {
-                Log::warning('Domain missing SRV target for SRV record', ['domain_id' => $this->domain_id]);
-
+            $serviceRecordType = ServiceRecordType::fromServer($this->server);
+            if (!$serviceRecordType) {
+                Log::warning('Unable to determine service record type for SRV record', ['server_id' => $this->server->id, 'server' => $this->server->name]);
                 Notification::make()
                     ->danger()
-                    ->title(trans('subdomains::strings.notifications.cloudflare_missing_srv_target_title'))
-                    ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_target', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown')]))
+                    ->title(trans('subdomains::strings.notifications.cloudflare_invalid_service_record_type_title'))
+                    ->body(trans('subdomains::strings.notifications.cloudflare_invalid_service_record_type', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown')]))
                     ->send();
 
                 return;
             }
 
-            $result = $service->upsertDnsRecord($zoneId, $this->name, 'SRV', $this->domain->srv_target, $this->cloudflare_id, $port);
+            if (!$this->server || !$this->server->node || empty($this->server->node->srv_target)) {
+                Log::warning('Node missing SRV target for SRV record', ['node_id' => $this->server->node?->id ?? null]);
+                Notification::make()
+                    ->danger()
+                    ->title(trans('subdomains::strings.notifications.cloudflare_missing_srv_target_title'))
+                    ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_target', ['node' => $this->server->node->name]))
+                    ->send();
+
+                return;
+            }
+
+            $recordName = sprintf('%s.%s.%s', $serviceRecordType->service(), $serviceRecordType->protocol(), $this->name);
+
+            $result = $registrar->upsertDnsRecord($zoneId, $recordName, 'SRV', $this->server->node->srv_target, $this->cloudflare_id, $port, $serviceRecordType);
 
             if ($result['success'] && !empty($result['id'])) {
                 if ($this->cloudflare_id !== $result['id']) {
@@ -172,7 +184,7 @@ class Subdomain extends Model implements HasLabel
             return;
         }
 
-        $result = $service->upsertDnsRecord($zoneId, $this->name, $this->record_type, $this->server->allocation->ip, $this->cloudflare_id, null);
+        $result = $registrar->upsertDnsRecord($zoneId, $this->name, $this->record_type, $this->server->allocation->ip, $this->cloudflare_id, null);
 
         if ($result['success'] && !empty($result['id'])) {
             if ($this->cloudflare_id !== $result['id']) {
@@ -201,9 +213,9 @@ class Subdomain extends Model implements HasLabel
     protected function deleteOnCloudflare(): void
     {
         if ($this->cloudflare_id && $this->domain && $this->domain->cloudflare_id) {
-            $service = app(CloudflareService::class);
+            $registrar = app(CloudflareService::class);
 
-            $result = $service->deleteDnsRecord($this->domain->cloudflare_id, $this->cloudflare_id);
+            $result = $registrar->deleteDnsRecord($this->domain->cloudflare_id, $this->cloudflare_id);
 
             if (!empty($result['success'])) {
                 Notification::make()

@@ -64,7 +64,7 @@ class CloudflareService
             }
 
             $payload = [
-                'name' => sprintf('_minecraft._tcp.%s', $name),
+                'name' => $name,
                 'ttl' => $ttl,
                 'type' => 'SRV',
                 'comment' => $comment,
