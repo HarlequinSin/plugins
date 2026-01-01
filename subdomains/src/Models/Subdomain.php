@@ -92,14 +92,15 @@ class Subdomain extends Model implements HasLabel
     {
         $registrar = app(CloudflareService::class);
 
-        $zoneId = $this->domain->cloudflare_id;
+        // add null check for domain
+        $zoneId = $this->domain?->cloudflare_id ?? null;
         if (empty($zoneId)) {
             Log::warning('Cloudflare zone id missing for domain', ['domain_id' => $this->domain_id]);
 
             Notification::make()
                 ->danger()
                 ->title(trans('subdomains::strings.notifications.cloudflare_missing_zone_title'))
-                ->body(trans('subdomains::strings.notifications.cloudflare_missing_zone', ['domain' => $this->domain->name ?? 'unknown', 'subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown')]))
+                ->body(trans('subdomains::strings.notifications.cloudflare_missing_zone', ['domain' => $this->domain?->name ?? 'unknown', 'subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown')]))
                 ->send();
 
             return;
@@ -107,14 +108,14 @@ class Subdomain extends Model implements HasLabel
 
         // SRV: target comes from node, port from server allocation
         if ($this->record_type === 'SRV') {
-            $port = $this->server && $this->server->allocation ? ($this->server->allocation->port ?? null) : null;
+            $port = $this->server?->allocation?->port ?? null;
 
             if (empty($port)) {
                 Log::warning('Server missing allocation with port', $this->toArray());
                 Notification::make()
                     ->danger()
                     ->title(trans('subdomains::strings.notifications.cloudflare_missing_srv_port_title'))
-                    ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_port', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown')]))
+                    ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_port', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown')]))
                     ->send();
 
                 return;
@@ -122,22 +123,22 @@ class Subdomain extends Model implements HasLabel
 
             $serviceRecordType = ServiceRecordType::fromServer($this->server);
             if (!$serviceRecordType) {
-                Log::warning('Unable to determine service record type for SRV record', ['server_id' => $this->server->id, 'server' => $this->server->name]);
+                Log::warning('Unable to determine service record type for SRV record', ['server_id' => $this->server?->id, 'server' => $this->server?->name]);
                 Notification::make()
                     ->danger()
                     ->title(trans('subdomains::strings.notifications.cloudflare_invalid_service_record_type_title'))
-                    ->body(trans('subdomains::strings.notifications.cloudflare_invalid_service_record_type', ['subdomain' => $this->name . '.' . ($this->domain->name ?? 'unknown')]))
+                    ->body(trans('subdomains::strings.notifications.cloudflare_invalid_service_record_type', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown')]))
                     ->send();
 
                 return;
             }
 
-            if (!$this->server || !$this->server->node || empty($this->server->node->srv_target)) {
+            if (empty($this->server?->node?->srv_target)) {
                 Log::warning('Node missing SRV target for SRV record', ['node_id' => $this->server->node?->id ?? null]);
                 Notification::make()
                     ->danger()
                     ->title(trans('subdomains::strings.notifications.cloudflare_missing_srv_target_title'))
-                    ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_target', ['node' => $this->server->node->name]))
+                    ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_target', ['node' => $this->server->node?->name ?? 'unknown']))
                     ->send();
 
                 return;
@@ -171,7 +172,8 @@ class Subdomain extends Model implements HasLabel
         }
 
         // A/AAAA
-        if (!$this->server || !$this->server->allocation || $this->server->allocation->ip === '0.0.0.0' || $this->server->allocation->ip === '::') {
+        $ip = $this->server?->allocation?->ip;
+        if (empty($ip) || $ip === '0.0.0.0' || $ip === '::') {
             Log::warning('Server allocation missing or invalid IP', ['server_id' => $this->server_id]);
 
             Notification::make()
@@ -183,7 +185,7 @@ class Subdomain extends Model implements HasLabel
             return;
         }
 
-        $result = $registrar->upsertDnsRecord($zoneId, $this->name, $this->record_type, $this->server->allocation->ip, $this->cloudflare_id, null);
+        $result = $registrar->upsertDnsRecord($zoneId, $this->name, $this->record_type, $ip, $this->cloudflare_id, null);
 
         if ($result['success'] && !empty($result['id'])) {
             if ($this->cloudflare_id !== $result['id']) {
