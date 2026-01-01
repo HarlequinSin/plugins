@@ -36,6 +36,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\HtmlString;
 use Phiki\Grammar\Grammar;
+use Throwable;
 
 class EditNode extends BaseEditNode
 {
@@ -376,8 +377,11 @@ class EditNode extends BaseEditNode
                                     'lg' => 3,
                                 ])
                                 ->dehydrateStateUsing(function ($state) {
-                                    $this->record->forceFill(['srv_target' => $state])->save();
+                                    if ($this->record->srv_target === $state) {
+                                        return $state;
+                                    }
 
+                                    $this->record->forceFill(['srv_target' => $state])->save();
                                     Notification::make()
                                         ->title(trans('subdomains::strings.notifications.srv_target_updated_title'))
                                         ->body(trans('subdomains::strings.notifications.srv_target_updated'))
@@ -386,6 +390,7 @@ class EditNode extends BaseEditNode
 
                                     return $state;
                                 }),
+                            // Subdomains plugin field
                             Grid::make()
                                 ->columns([
                                     'default' => 1,
