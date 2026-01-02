@@ -5,6 +5,7 @@ namespace Boy132\Subdomains\Models;
 use App\Models\Server;
 use Boy132\Subdomains\Enums\ServiceRecordType;
 use Boy132\Subdomains\Services\CloudflareService;
+use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
@@ -45,12 +46,52 @@ class Subdomain extends Model implements HasLabel
     {
         parent::boot();
 
-        static::saved(function (self $model) {
-            $model->upsertOnCloudflare();
+        static::creating(function (self $model) {
+            // Relation does not exist yet, so we need to set it manually.
+            $model->setRelation('server', Filament::getTenant());
+
+            $registrarUpdated = $model->upsertOnCloudflare();
+            if (!$registrarUpdated) {
+                return false;
+            }
+
+            Notification::make()
+                ->success()
+                ->title(trans('subdomains::strings.notifications.cloudflare_record_created_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_record_created', ['subdomain' => $model->name . '.' . ($model->domain?->name ?? 'unknown'), 'record_type' => $model->record_type]))
+                ->send();
+
+            return true;
         });
 
-        static::deleted(function (self $model) {
-            $model->deleteOnCloudflare();
+        static::updating(function (self $model) {
+            $registrarUpdated = $model->upsertOnCloudflare();
+            if (!$registrarUpdated) {
+                return false;
+            }
+
+            Notification::make()
+                ->success()
+                ->title(trans('subdomains::strings.notifications.cloudflare_record_updated_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_record_updated', ['subdomain' => $model->name . '.' . ($model->domain?->name ?? 'unknown'), 'record_type' => $model->record_type]))
+                ->send();
+
+            return true;
+        });
+
+        static::deleting(function (self $model) {
+            $registrarUpdated = $model->deleteOnCloudflare();
+            if (!$registrarUpdated) {
+                return false;
+            }
+
+            Notification::make()
+                ->success()
+                ->title(trans('subdomains::strings.notifications.cloudflare_record_deleted_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_record_deleted', ['subdomain' => $model->name . '.' . ($model->domain?->name ?? 'unknown')]))
+                ->send();
+
+            return true;
         });
     }
 
@@ -88,11 +129,10 @@ class Subdomain extends Model implements HasLabel
         }
     }
 
-    protected function upsertOnCloudflare(): void
+    protected function upsertOnCloudflare(): bool
     {
         $registrar = app(CloudflareService::class);
 
-        // add null check for domain
         $zoneId = $this->domain?->cloudflare_id ?? null;
         if (empty($zoneId)) {
             Log::warning('Cloudflare zone id missing for domain', ['domain_id' => $this->domain_id]);
@@ -103,22 +143,21 @@ class Subdomain extends Model implements HasLabel
                 ->body(trans('subdomains::strings.notifications.cloudflare_missing_zone', ['domain' => $this->domain?->name ?? 'unknown', 'subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown')]))
                 ->send();
 
-            return;
+            return false;
         }
 
         // SRV: target comes from node, port from server allocation
         if ($this->record_type === 'SRV') {
-            $port = $this->server?->allocation?->port ?? null;
-
+            $port = $this->server->allocation?->port ?? null;
             if (empty($port)) {
                 Log::warning('Server missing allocation with port', $this->toArray());
                 Notification::make()
                     ->danger()
                     ->title(trans('subdomains::strings.notifications.cloudflare_missing_srv_port_title'))
-                    ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_port', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown')]))
+                    ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_port', ['server' => $this->server?->name ?? 'unassigned']))
                     ->send();
 
-                return;
+                return false;
             }
 
             $serviceRecordType = ServiceRecordType::fromServer($this->server);
@@ -130,7 +169,7 @@ class Subdomain extends Model implements HasLabel
                     ->body(trans('subdomains::strings.notifications.cloudflare_invalid_service_record_type', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown')]))
                     ->send();
 
-                return;
+                return false;
             }
 
             if (empty($this->server?->node?->srv_target)) {
@@ -141,48 +180,41 @@ class Subdomain extends Model implements HasLabel
                     ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_target', ['node' => $this->server->node?->name ?? 'unknown']))
                     ->send();
 
-                return;
+                return false;
             }
 
             $recordName = sprintf('%s.%s.%s', $serviceRecordType->service(), $serviceRecordType->protocol(), $this->name);
 
-            $result = $registrar->upsertDnsRecord($zoneId, $recordName, 'SRV', $this->server->node->srv_target, $this->cloudflare_id, $port, $serviceRecordType);
+            $result = $registrar->upsertDnsRecord($zoneId, $recordName, 'SRV', $this->server->node->srv_target, $this->cloudflare_id, $port);
 
             if ($result['success'] && !empty($result['id'])) {
                 if ($this->cloudflare_id !== $result['id']) {
                     $this->updateQuietly(['cloudflare_id' => $result['id']]);
                 }
 
-                Notification::make()
-                    ->success()
-                    ->title(trans('subdomains::strings.notifications.cloudflare_record_updated_title'))
-                    ->body(trans('subdomains::strings.notifications.cloudflare_record_updated', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown'), 'record_type' => $this->record_type]))
-                    ->send();
-            } else {
-                Log::error('Failed to upsert SRV record on Cloudflare for Subdomain ID ' . $this->id, ['result' => $result]);
-
-                Notification::make()
-                    ->danger()
-                    ->title(trans('subdomains::strings.notifications.cloudflare_upsert_failed_title'))
-                    ->body(trans('subdomains::strings.notifications.cloudflare_upsert_failed', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown'), 'errors' => json_encode($result['errors'] ?? $result['body'] ?? [])]))
-                    ->send();
+                return true;
             }
+            Log::error('Failed to upsert SRV record on Cloudflare for Subdomain ID ' . $this->id, ['result' => $result]);
+            Notification::make()
+                ->danger()
+                ->title(trans('subdomains::strings.notifications.cloudflare_upsert_failed_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_upsert_failed', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown'), 'errors' => json_encode($result['errors'] ?? $result['body'] ?? [])]))
+                ->send();
 
-            return;
+            return false;
         }
 
         // A/AAAA
         $ip = $this->server?->allocation?->ip ?? null;
         if (empty($ip) || $ip === '0.0.0.0' || $ip === '::') {
             Log::warning('Server allocation missing or invalid IP', ['server_id' => $this->server_id]);
-
             Notification::make()
                 ->danger()
                 ->title(trans('subdomains::strings.notifications.cloudflare_missing_ip_title'))
                 ->body(trans('subdomains::strings.notifications.cloudflare_missing_ip', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown')]))
                 ->send();
 
-            return;
+            return false;
         }
 
         $result = $registrar->upsertDnsRecord($zoneId, $this->name, $this->record_type, $ip, $this->cloudflare_id, null);
@@ -192,47 +224,42 @@ class Subdomain extends Model implements HasLabel
                 $this->updateQuietly(['cloudflare_id' => $result['id']]);
             }
 
-            Notification::make()
-                ->success()
-                ->title(trans('subdomains::strings.notifications.cloudflare_record_updated_title'))
-                ->body(trans('subdomains::strings.notifications.cloudflare_record_updated', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown'), 'record_type' => $this->record_type]))
-                ->send();
-        } else {
-            Log::error('Failed to upsert record on Cloudflare for Subdomain ID ' . $this->id, ['result' => $result]);
-
-            $domainName = $this->domain?->name ?? 'unknown';
-            $sub = sprintf('%s.%s', $this->name, $domainName);
-
-            Notification::make()
-                ->danger()
-                ->title(trans('subdomains::strings.notifications.cloudflare_upsert_failed_title'))
-                ->body(trans('subdomains::strings.notifications.cloudflare_upsert_failed', ['subdomain' => $sub, 'errors' => json_encode($result['errors'] ?? $result['body'] ?? [])]))
-                ->send();
+            return true;
         }
+
+        $domainName = $this->domain?->name ?? 'unknown';
+        $subdomain = sprintf('%s.%s', $this->name, $domainName);
+
+        Log::error('Failed to upsert record on Cloudflare for Subdomain ID ' . $this->id, ['result' => $result]);
+        Notification::make()
+            ->danger()
+            ->title(trans('subdomains::strings.notifications.cloudflare_upsert_failed_title'))
+            ->body(trans('subdomains::strings.notifications.cloudflare_upsert_failed', ['subdomain' => $subdomain, 'errors' => json_encode($result['errors'] ?? $result['body'] ?? [])]))
+            ->send();
+
+        return false;
     }
 
-    protected function deleteOnCloudflare(): void
+    protected function deleteOnCloudflare(): bool
     {
         if ($this->cloudflare_id && $this->domain && $this->domain->cloudflare_id) {
             $registrar = app(CloudflareService::class);
 
             $result = $registrar->deleteDnsRecord($this->domain->cloudflare_id, $this->cloudflare_id);
 
-            if (!empty($result['success'])) {
-                Notification::make()
-                    ->success()
-                    ->title(trans('subdomains::strings.notifications.cloudflare_delete_success_title'))
-                    ->body(trans('subdomains::strings.notifications.cloudflare_delete_success', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown')]))
-                    ->send();
-            } else {
-                Notification::make()
-                    ->danger()
-                    ->title(trans('subdomains::strings.notifications.cloudflare_delete_failed_title'))
-                    ->body(trans('subdomains::strings.notifications.cloudflare_delete_failed', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown'), 'errors' => json_encode($result['errors'] ?? $result['body'] ?? [])]))
-                    ->send();
+            if (!empty($result['success']) || $result['status'] === 404) {
+                return true;
             }
 
-            return;
+            Notification::make()
+                ->danger()
+                ->title(trans('subdomains::strings.notifications.cloudflare_delete_failed_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_delete_failed', ['subdomain' => $this->name . '.' . ($this->domain?->name ?? 'unknown'), 'errors' => json_encode($result['errors'] ?? $result['body'] ?? [])]))
+                ->send();
+
+            return false;
         }
+
+        return true;
     }
 }
