@@ -23,10 +23,9 @@ class CloudflareService
         } catch (\Throwable $e) {
             Log::error('Cloudflare getZoneId request failed: ' . $e->getMessage(), ['domain' => $domainName]);
 
-            return null;
+            return ['success' => false, 'errors' => ['exception' => $e->getMessage()], 'status' => $e->getCode(), 'body' => $e->getTraceAsString()];
         }
 
-        $status = $response->status();
         $body = $response->json() ?? [];
 
         if ($response->successful() && !empty($body['result']) && count($body['result']) > 0) {
@@ -34,10 +33,10 @@ class CloudflareService
         }
 
         if (!empty($body['errors'])) {
-            Log::warning('Cloudflare getZoneId returned errors', ['domain' => $domainName, 'status' => $status, 'errors' => $body['errors']]);
+            Log::warning('Cloudflare getZoneId returned errors', ['domain' => $domainName, 'status' => $response->status(), 'errors' => $body['errors']]);
         }
 
-        return null;
+        return ['success' => false, 'errors' => [], 'status' => $response->status(), 'body' => $body];
     }
 
     public function upsertDnsRecord(string $zoneId, string $name, string $recordType, string $target, ?string $recordId = null, ?int $port = null): array
@@ -113,26 +112,10 @@ class CloudflareService
 
             return $parsed;
         } catch (\Throwable $e) {
-            Log::error('Cloudflare upsert exception: ' . $e->getMessage(), ['zone' => $zoneId, 'payload' => $payload]);
+            Log::error('Cloudflare upsert exception: ' . $e->getMessage(), ['zone' => $zoneId, 'payload' => $payload, 'status' => $e->getCode()]);
 
-            return ['success' => false, 'id' => null, 'errors' => ['exception' => $e->getMessage()], 'status' => 0, 'body' => null];
+            return ['success' => false, 'errors' => ['exception' => $e->getMessage()], 'status' => $e->getCode(), 'body' => $e->getTraceAsString()];
         }
-    }
-
-    protected function parseCloudflareHttpResponse(Response $response): array
-    {
-        $status = $response->status();
-        $body = $response->json() ?? [];
-
-        $success = $response->successful() && ($body['success'] === true || (is_array($body['result']) && count($body['result']) > 0));
-
-        return [
-            'success' => $success,
-            'id' => $body['result']['id'] ?? null,
-            'errors' => $body['errors'] ?? [],
-            'status' => $status,
-            'body' => $body,
-        ];
     }
 
     public function deleteDnsRecord(string $zoneId, string $recordId): array
@@ -154,9 +137,25 @@ class CloudflareService
 
             return $parsed;
         } catch (\Throwable $e) {
-            Log::error('Cloudflare delete exception: ' . $e->getMessage(), ['zone' => $zoneId, 'id' => $recordId]);
+            Log::error('Cloudflare delete exception: ' . $e->getMessage(), ['zone' => $zoneId, 'id' => $recordId, 'payload' => $payload, 'status' => $e->getCode()]);
 
-            return ['success' => false, 'errors' => ['exception' => $e->getMessage()], 'status' => 0, 'body' => null];
+            return ['success' => false, 'errors' => ['exception' => $e->getMessage()], 'status' => $e->getCode(), 'body' => $e->getTraceAsString()];
         }
+    }
+
+    protected function parseCloudflareHttpResponse(Response $response): array
+    {
+        $status = $response->status();
+        $body = $response->json() ?? [];
+
+        $success = $response->successful() && ($body['success'] === true || (is_array($body['result']) && count($body['result']) > 0));
+
+        return [
+            'success' => $success,
+            'id' => $body['result']['id'] ?? null,
+            'errors' => $body['errors'] ?? [],
+            'status' => $status,
+            'body' => $body,
+        ];
     }
 }
