@@ -41,13 +41,6 @@ class CloudflareService
     }
 
     /**
-     * @param string $zoneId
-     * @param string $name
-     * @param string $recordType
-     * @param string $target
-     * @param string|null $recordId
-     * @param int|null $port
-     *
      * @return array{success: bool, id: string|null, errors: array<string, mixed>, status: int, body: mixed|null}
      */
     public function upsertDnsRecord(string $zoneId, string $name, string $recordType, string $target, ?string $recordId = null, ?int $port = null): array
@@ -132,8 +125,6 @@ class CloudflareService
     }
 
     /**
-     * @param string $zoneId
-     * @param string $recordId
      * @return array{success: bool, id: string|null, errors: array<string, mixed>, status: int, body: mixed|null}
      */
     public function deleteDnsRecord(string $zoneId, string $recordId): array
@@ -163,7 +154,6 @@ class CloudflareService
     }
 
     /**
-     * @param Response $response
      * @return array{success: bool, id: string|null, errors: array<string, mixed>, status: int, body: mixed|null}
      */
     protected function parseCloudflareHttpResponse(Response $response): array

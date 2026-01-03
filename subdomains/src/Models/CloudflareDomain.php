@@ -6,6 +6,7 @@ use Boy132\Subdomains\Services\CloudflareService;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Http;
 
 /**
  * @property int $id

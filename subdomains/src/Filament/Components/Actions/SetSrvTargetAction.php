@@ -22,11 +22,11 @@ class SetSrvTargetAction extends Action
 
         $this->icon('tabler-world-www');
 
-        $this->schema(function (?Node $node) {
+        $this->schema(function (Node $node) {
             return [
                 TextInput::make('srv_target')
                     ->label(fn () => trans('subdomains::strings.srv_target'))
-                    ->default(fn () => $node?->srv_target)
+                    ->default(fn () => $node?->srv_target) // @phpstan-ignore variable.undefined
                     ->placeholder('play.example.com OR IPv4/IPv6 address')
                     ->helperText(trans('subdomains::strings.srv_target_confirmation'))
                     ->rules(['nullable', 'string', 'regex:/^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(?:\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$/']),
