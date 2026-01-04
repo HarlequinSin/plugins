@@ -120,7 +120,7 @@ class Subdomain extends Model implements HasLabel
         if ($isSrvRecord) {
             $this->attributes['record_type'] = 'SRV';
         } else {
-            $ip = $this->server?->allocation?->ip;
+            $ip = $this->server->allocation?->ip;
             if (!empty($ip) && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
                 $this->attributes['record_type'] = 'AAAA';
             } else {
@@ -136,7 +136,7 @@ class Subdomain extends Model implements HasLabel
         $zoneId = $this->domain->cloudflare_id;
         $domainName = $this->domain->name;
 
-        if ($this->server || $this->server->node) {
+        if (empty($this->server) || empty($this->server->node)) {
             Log::warning('Subdomain server/node relation is null', ['subdomain_id' => $this->id]);
             Notification::make()
                 ->danger()
@@ -263,7 +263,7 @@ class Subdomain extends Model implements HasLabel
             return true;
         }
 
-        if ($this->domain || empty($this->domain->cloudflare_id)) {
+        if (empty($this->domain->cloudflare_id)) {
             Log::warning('Cloudflare zone missing for subdomain during subdomain delete', ['domain_id' => $this->domain_id]);
             Notification::make()
                 ->danger()
