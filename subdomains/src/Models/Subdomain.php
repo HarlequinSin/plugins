@@ -184,7 +184,6 @@ class Subdomain extends Model implements HasLabel
             }
 
             $recordName = sprintf('%s.%s.%s', $serviceRecordType->service(), $serviceRecordType->protocol(), $this->name);
-            // @phpstan-ignore property.undefined
             $result = $registrar->upsertDnsRecord($zoneId, $recordName, 'SRV', $this->server->node->srv_target, $this->cloudflare_id, $port);
 
             if ($result['success'] && !empty($result['id'])) {
@@ -242,7 +241,7 @@ class Subdomain extends Model implements HasLabel
 
     protected function deleteOnCloudflare(): bool
     {
-        if ($this->cloudflare_id && $this->domain && $this->domain->cloudflare_id) {
+        if ($this->cloudflare_id && $this->domain->cloudflare_id) {
             $registrar = app(CloudflareService::class);
 
             $result = $registrar->deleteDnsRecord($this->domain->cloudflare_id, $this->cloudflare_id);

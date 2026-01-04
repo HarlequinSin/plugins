@@ -128,7 +128,7 @@ class SubdomainResource extends Resource
                     ->searchable(),
                 Toggle::make('srv_record')
                     ->label(trans('subdomains::strings.srv_record'))
-                    ->helperText(fn () => Filament::getTenant()->node->srv_target ? trans('subdomains::strings.srv_record_help') : trans('subdomains::strings.srv_target_missing')) // @phpstan-ignore property.undefined
+                    ->helperText(fn () => Filament::getTenant()->node->srv_target ? trans('subdomains::strings.srv_record_help') : trans('subdomains::strings.srv_target_missing')) // @phpstan-ignore property.notFound
                     ->reactive()
                     ->disabled(fn () => empty(Filament::getTenant()->node->srv_target)),
             ]);
