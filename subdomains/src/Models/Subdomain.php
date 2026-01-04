@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Log;
  * @property CloudflareDomain $domain
  * @property int $server_id
  * @property Server $server
+ * @property bool $srv_record
  */
 class Subdomain extends Model implements HasLabel
 {
@@ -48,7 +49,7 @@ class Subdomain extends Model implements HasLabel
         static::creating(function (self $model) {
             // Relation does not exist yet, so we need to set it manually.
             if ($model->server_id) {
-                $model->loadMissing('server.allocation');
+                $model->loadMissing('server.allocation', 'server.node', 'domain');
             }
 
             $registrarUpdated = $model->upsertOnCloudflare();
@@ -121,7 +122,7 @@ class Subdomain extends Model implements HasLabel
         if ($isSrvRecord) {
             $this->attributes['record_type'] = 'SRV';
         } else {
-            $ip = $this->server?->allocation?->ip; // @phpstan-ignore nullsafe.neverNull
+            $ip = $this->server->allocation->ip;
             if (!empty($ip) && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
                 $this->attributes['record_type'] = 'AAAA';
             } else {
@@ -134,8 +135,8 @@ class Subdomain extends Model implements HasLabel
     {
         $registrar = app(CloudflareService::class);
 
-        $zoneId = $this->domain?->cloudflare_id; // @phpstan-ignore nullsafe.neverNull
-        $domainName = $this->domain?->name; // @phpstan-ignore nullsafe.neverNull
+        $zoneId = $this->domain->cloudflare_id;
+        $domainName = $this->domain->name;
 
         if (empty($this->server) || empty($this->server->node)) {
             Log::warning('Subdomain server/node relation is null', ['subdomain_id' => $this->id]);
@@ -159,8 +160,8 @@ class Subdomain extends Model implements HasLabel
             return false;
         }
 
-        if (empty($zoneId) || empty($domainName)) {
-            Log::warning('Cloudflare zone id or name missing for domain', ['domain_id' => $this->domain_id]);
+        if (empty($zoneId)) {
+            Log::warning('Cloudflare zone id missing for domain', ['domain_id' => $this->domain_id]);
             Notification::make()
                 ->danger()
                 ->title(trans('subdomains::strings.notifications.cloudflare_missing_zone_title'))
@@ -172,18 +173,6 @@ class Subdomain extends Model implements HasLabel
 
         // SRV: target comes from node, port from server allocation
         if ($this->record_type === 'SRV') {
-            $port = $this->server->allocation?->port; // @phpstan-ignore nullsafe.neverNull
-            if (empty($port)) {
-                Log::warning('Server missing allocation with port', $this->toArray());
-                Notification::make()
-                    ->danger()
-                    ->title(trans('subdomains::strings.notifications.cloudflare_missing_srv_port_title'))
-                    ->body(trans('subdomains::strings.notifications.cloudflare_missing_srv_port', ['server' => $this->server->name ?? 'unassigned']))
-                    ->send();
-
-                return false;
-            }
-
             $serviceRecordType = ServiceRecordType::fromServer($this->server);
             if (!$serviceRecordType) {
                 Log::warning('Unable to determine service record type for SRV record', ['server_id' => $this->server->id ?? 'unknown', 'server' => $this->server->name ?? 'unknown']);
@@ -207,7 +196,7 @@ class Subdomain extends Model implements HasLabel
                 return false;
             }
 
-            $result = $registrar->upsertDnsRecord($zoneId, $domainName, $this->name, 'SRV', $this->server->node->srv_target, $this->cloudflare_id, $port, $serviceRecordType);
+            $result = $registrar->upsertDnsRecord($zoneId, $domainName, $this->name, 'SRV', $this->server->node->srv_target, $this->cloudflare_id, $this->server->allocation->port, $serviceRecordType);
 
             if ($result['success'] && !empty($result['id'])) {
                 if ($this->cloudflare_id !== $result['id']) {
@@ -231,7 +220,7 @@ class Subdomain extends Model implements HasLabel
         }
 
         // A/AAAA
-        $ip = $this->server->allocation?->ip; // @phpstan-ignore nullsafe.neverNull
+        $ip = $this->server->allocation->ip;
         if (empty($ip) || $ip === '0.0.0.0' || $ip === '::') {
             Log::warning('Server allocation missing or invalid IP', ['server_id' => $this->server_id]);
             Notification::make()
@@ -275,7 +264,7 @@ class Subdomain extends Model implements HasLabel
             return true;
         }
 
-        if (!$this->domain?->cloudflare_id) { // @phpstan-ignore nullsafe.neverNull
+        if (!$this->domain->cloudflare_id) {
             Log::warning('Cloudflare zone missing for subdomain during subdomain delete', ['domain_id' => $this->domain_id]);
             Notification::make()
                 ->danger()

@@ -15,18 +15,6 @@ enum ServiceRecordType: string implements HasLabel
         return str($this->name)->title();
     }
 
-    public static function isSupported(Server $server): bool
-    {
-        $tags = $server->egg->tags ?? [];
-        foreach (self::cases() as $type) {
-            if (in_array($type->name, $tags)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public static function fromServer(Server $server): ?self
     {
         $tags = $server->egg->tags ?? [];

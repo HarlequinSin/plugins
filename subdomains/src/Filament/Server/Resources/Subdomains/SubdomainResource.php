@@ -36,13 +36,8 @@ class SubdomainResource extends Resource
     {
         /** @var Server $server */
         $server = Filament::getTenant();
-        $ip = $server->allocation?->ip ?? null; // @phpstan-ignore nullsafe.neverNull
 
-        return parent::canAccess()
-            && $ip !== null
-            && $ip !== '0.0.0.0'
-            && $ip !== '::'
-            && CloudflareDomain::count() > 0;
+        return parent::canAccess() && $server->allocation && $server->allocation->ip !== '0.0.0.0' && $server->allocation->ip !== '::' && CloudflareDomain::count() > 0;
     }
 
     public static function getNavigationLabel(): string
@@ -85,9 +80,9 @@ class SubdomainResource extends Resource
                     ->state(fn (Subdomain $subdomain) => $subdomain->getLabel()),
                 TextColumn::make('record_type')
                     ->label(trans('subdomains::strings.record_type'))
-                    ->icon(fn (Subdomain $subdomain) => $subdomain->srv_record && !$subdomain->server?->node?->srv_target ? 'tabler-alert-triangle' : null) // @phpstan-ignore nullsafe.neverNull, nullsafe.neverNull, property.notFound
-                    ->color(fn (Subdomain $subdomain) => $subdomain->srv_record && !$subdomain->server?->node?->srv_target ? 'danger' : null) // @phpstan-ignore nullsafe.neverNull, nullsafe.neverNull, property.notFound
-                    ->tooltip(fn (Subdomain $subdomain) => $subdomain->srv_record && !$subdomain->server?->node?->srv_target ? trans('subdomains::strings.srv_target_missing') : null), // @phpstan-ignore nullsafe.neverNull, nullsafe.neverNull, property.notFound
+                    ->icon(fn (Subdomain $subdomain) => $subdomain->srv_record && !$subdomain->server->node->srv_target ? 'tabler-alert-triangle' : null) // @phpstan-ignore property.notFound
+                    ->color(fn (Subdomain $subdomain) => $subdomain->srv_record && !$subdomain->server->node->srv_target ? 'danger' : null) // @phpstan-ignore property.notFound
+                    ->tooltip(fn (Subdomain $subdomain) => $subdomain->srv_record && !$subdomain->server->node->srv_target ? trans('subdomains::strings.srv_target_missing') : null), // @phpstan-ignore property.notFound
             ])
             ->recordActions([
                 EditAction::make()
@@ -124,13 +119,13 @@ class SubdomainResource extends Resource
                     ->required()
                     ->relationship('domain', 'name')
                     ->preload()
-                    ->default(fn () => CloudflareDomain::first()?->id ?? null) // @phpstan-ignore nullsafe.neverNull
+                    ->default(fn () => CloudflareDomain::first()?->id)
                     ->searchable(),
                 Toggle::make('srv_record')
                     ->label(trans('subdomains::strings.srv_record'))
-                    ->helperText(fn () => Filament::getTenant()->node?->srv_target ? trans('subdomains::strings.srv_record_help') : trans('subdomains::strings.srv_target_missing')) // @phpstan-ignore property.notFound
+                    ->helperText(fn () => Filament::getTenant()->node->srv_target ? trans('subdomains::strings.srv_record_help') : trans('subdomains::strings.srv_target_missing')) // @phpstan-ignore property.notFound
                     ->reactive()
-                    ->disabled(fn () => !Filament::getTenant()->node?->srv_target), // @phpstan-ignore property.notFound
+                    ->disabled(fn () => !Filament::getTenant()->node->srv_target), // @phpstan-ignore property.notFound
             ]);
     }
 
