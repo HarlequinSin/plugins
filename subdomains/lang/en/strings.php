@@ -40,7 +40,7 @@ return [
         'cloudflare_missing_srv_port' => 'SRV port is missing for :server.',
 
         'cloudflare_missing_srv_target_title' => 'Cloudflare: Missing SRV Target',
-        'cloudflare_missing_srv_target' => 'SRV target is missing from :node. ',
+        'cloudflare_missing_srv_target' => 'SRV target is missing from :node.',
 
         'cloudflare_record_created_title' => 'Cloudflare: Record Created',
         'cloudflare_record_created' => 'Successfully created :subdomain record',

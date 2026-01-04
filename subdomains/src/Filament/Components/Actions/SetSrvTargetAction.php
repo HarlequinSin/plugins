@@ -28,8 +28,7 @@ class SetSrvTargetAction extends Action
                     ->label(fn () => trans('subdomains::strings.srv_target'))
                     ->default(fn () => $node->srv_target) // @phpstan-ignore property.notFound
                     ->placeholder('play.example.com OR IPv4/IPv6 address')
-                    ->helperText(trans('subdomains::strings.srv_target_confirmation'))
-                    ->rules(['nullable', 'string', 'regex:/^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(?:\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$/']),
+                    ->helperText(trans('subdomains::strings.srv_target_confirmation')),
             ];
         });
 

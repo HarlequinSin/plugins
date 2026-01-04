@@ -120,7 +120,7 @@ class Subdomain extends Model implements HasLabel
         if ($isSrvRecord) {
             $this->attributes['record_type'] = 'SRV';
         } else {
-            $ip = $this->server->allocation?->ip;
+            $ip = $this->server?->allocation?->ip;
             if (!empty($ip) && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
                 $this->attributes['record_type'] = 'AAAA';
             } else {
@@ -136,9 +136,19 @@ class Subdomain extends Model implements HasLabel
         $zoneId = $this->domain->cloudflare_id;
         $domainName = $this->domain->name;
 
+        if ($this->server || $this->server->node) {
+            Log::warning('Subdomain server/node relation is null', ['subdomain_id' => $this->id]);
+            Notification::make()
+                ->danger()
+                ->title(trans('subdomains::strings.notifications.cloudflare_upsert_failed_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_upsert_failed', ['subdomain' => $this->getLabel() ?? 'unknown', 'errors' => 'Server/node relation is null']))
+                ->send();
+
+            return false;
+        }
+
         if (empty($zoneId) || empty($domainName)) {
             Log::warning('Cloudflare zone id or name missing for domain', ['domain_id' => $this->domain_id]);
-
             Notification::make()
                 ->danger()
                 ->title(trans('subdomains::strings.notifications.cloudflare_missing_zone_title'))
@@ -192,7 +202,6 @@ class Subdomain extends Model implements HasLabel
                     if ($this->exists) {
                         $this->updateQuietly(['cloudflare_id' => $result['id']]);
                     } else {
-                        // Model is being created, set attribute so it gets persisted with the insert
                         $this->cloudflare_id = $result['id'];
                     }
                 }
@@ -225,7 +234,13 @@ class Subdomain extends Model implements HasLabel
         $result = $registrar->upsertDnsRecord($zoneId, $domainName, $this->name, $this->record_type, $ip, $this->cloudflare_id, null, null);
 
         if ($result['success'] && !empty($result['id'])) {
-            $this->cloudflare_id = $result['id'];
+            if ($this->cloudflare_id !== $result['id']) {
+                if ($this->exists) {
+                    $this->updateQuietly(['cloudflare_id' => $result['id']]);
+                } else {
+                    $this->cloudflare_id = $result['id'];
+                }
+            }
 
             return true;
         }
@@ -246,6 +261,17 @@ class Subdomain extends Model implements HasLabel
             Log::warning('Subdomain deleteOnCloudflare called but no cloudflare_id set', ['subdomain_id' => $this->id]);
 
             return true;
+        }
+
+        if ($this->domain || empty($this->domain->cloudflare_id)) {
+            Log::warning('Cloudflare zone missing for subdomain during subdomain delete', ['domain_id' => $this->domain_id]);
+            Notification::make()
+                ->danger()
+                ->title(trans('subdomains::strings.notifications.cloudflare_delete_failed_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_delete_failed', ['errors' => 'Cloudflare zone missing for domain']))
+                ->send();
+
+            return false;
         }
 
         $registrar = app(CloudflareService::class);
