@@ -85,9 +85,9 @@ class SubdomainResource extends Resource
                     ->state(fn (Subdomain $subdomain) => $subdomain->getLabel()),
                 TextColumn::make('record_type')
                     ->label(trans('subdomains::strings.record_type'))
-                    ->icon(fn (Subdomain $subdomain) => $subdomain->srv_record && empty($subdomain->server?->node?->srv_target) ? 'tabler-alert-triangle' : null)
-                    ->color(fn (Subdomain $subdomain) => $subdomain->srv_record && empty($subdomain->server?->node?->srv_target) ? 'danger' : null)
-                    ->tooltip(fn (Subdomain $subdomain) => $subdomain->srv_record && empty($subdomain->server?->node?->srv_target) ? trans('subdomains::strings.srv_target_missing') : null),
+                    ->icon(fn (Subdomain $subdomain) => $subdomain->srv_record && !$subdomain->server?->node?->srv_target ? 'tabler-alert-triangle' : null)
+                    ->color(fn (Subdomain $subdomain) => $subdomain->srv_record && !$subdomain->server?->node?->srv_target ? 'danger' : null)
+                    ->tooltip(fn (Subdomain $subdomain) => $subdomain->srv_record && !$subdomain->server?->node?->srv_target ? trans('subdomains::strings.srv_target_missing') : null),
             ])
             ->recordActions([
                 EditAction::make()
@@ -130,7 +130,7 @@ class SubdomainResource extends Resource
                     ->label(trans('subdomains::strings.srv_record'))
                     ->helperText(fn () => Filament::getTenant()->node?->srv_target ? trans('subdomains::strings.srv_record_help') : trans('subdomains::strings.srv_target_missing')) // @phpstan-ignore property.notFound
                     ->reactive()
-                    ->disabled(fn () => empty(Filament::getTenant()->node?->srv_target)),
+                    ->disabled(fn () => !Filament::getTenant()->node?->srv_target),
             ]);
     }
 

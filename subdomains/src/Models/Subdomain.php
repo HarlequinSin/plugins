@@ -147,6 +147,17 @@ class Subdomain extends Model implements HasLabel
             return false;
         }
 
+        if (empty($this->server->allocation)) {
+            Log::warning('Subdomain server allocation is null', ['subdomain_id' => $this->id, 'server_id' => $this->server->id]);
+            Notification::make()
+                ->danger()
+                ->title(trans('subdomains::strings.notifications.cloudflare_upsert_failed_title'))
+                ->body(trans('subdomains::strings.notifications.cloudflare_upsert_failed', ['subdomain' => $this->getLabel() ?? 'unknown', 'errors' => 'Server allocation is null']))
+                ->send();
+
+            return false;
+        }
+
         if (empty($zoneId) || empty($domainName)) {
             Log::warning('Cloudflare zone id or name missing for domain', ['domain_id' => $this->domain_id]);
             Notification::make()
@@ -219,7 +230,7 @@ class Subdomain extends Model implements HasLabel
         }
 
         // A/AAAA
-        $ip = $this->server?->allocation?->ip;
+        $ip = $this->server->allocation?->ip;
         if (empty($ip) || $ip === '0.0.0.0' || $ip === '::') {
             Log::warning('Server allocation missing or invalid IP', ['server_id' => $this->server_id]);
             Notification::make()
