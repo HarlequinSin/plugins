@@ -274,7 +274,7 @@ class Subdomain extends Model implements HasLabel
             return true;
         }
 
-        if (!$this->domain?->cloudflare_id) {
+        if (!$this->domain?->cloudflare_id) { // @phpstan-ignore nullsafe.neverNull
             Log::warning('Cloudflare zone missing for subdomain during subdomain delete', ['domain_id' => $this->domain_id]);
             Notification::make()
                 ->danger()

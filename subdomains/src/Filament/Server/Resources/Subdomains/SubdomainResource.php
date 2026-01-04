@@ -36,7 +36,7 @@ class SubdomainResource extends Resource
     {
         /** @var Server $server */
         $server = Filament::getTenant();
-        $ip = $server->allocation?->ip ?? null;
+        $ip = $server->allocation?->ip ?? null; // @phpstan-ignore nullsafe.neverNull
 
         return parent::canAccess()
             && $ip !== null
@@ -124,7 +124,7 @@ class SubdomainResource extends Resource
                     ->required()
                     ->relationship('domain', 'name')
                     ->preload()
-                    ->default(fn () => CloudflareDomain::first()?->id ?? null)
+                    ->default(fn () => CloudflareDomain::first()?->id ?? null) // @phpstan-ignore nullsafe.neverNull
                     ->searchable(),
                 Toggle::make('srv_record')
                     ->label(trans('subdomains::strings.srv_record'))
