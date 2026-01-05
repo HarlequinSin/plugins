@@ -13,7 +13,12 @@ Allows users to create and manage custom subdomains for their game servers using
 
 | Game | Required Egg tag |
 |------|------------------|
+| Factorio | `factorio` |
 | Minecraft | `minecraft` |
+| Mumble | `mumble` |
+| Rust | `rust` |
+| SCP: Secret Laboratory | `scpsl` |
+| TeamSpeak 3 | `teamspeak` |
 
 ### SRV requirements
 

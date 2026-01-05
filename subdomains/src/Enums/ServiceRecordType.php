@@ -8,7 +8,12 @@ use Filament\Support\Contracts\HasLabel;
 enum ServiceRecordType: string implements HasLabel
 {
     // Service record types
+    case factorio = '_factorio._udp';
     case minecraft = '_minecraft._tcp';
+    case mumble = '_mumble._tcp';
+    case rust = '_rust._udp';
+    case scpsl = '_scpsl._udp';
+    case teamspeak = '_ts3._udp';
 
     public function getLabel(): string
     {
