@@ -24,7 +24,7 @@ class PlayerCounterSeeder extends Seeder
                     'game_query_id' => $minecraftQuery->id,
                 ]);
             } elseif (in_array('source', $tags)) {
-                if($egg->name === 'Rust') {
+                if ($egg->name === 'Rust') {
                     $rustQuery = GameQuery::firstOrCreate(['query_type' => 'rust']);
 
                     EggGameQuery::firstOrCreate([
@@ -39,6 +39,7 @@ class PlayerCounterSeeder extends Seeder
                         'game_query_id' => $sourceQuery->id,
                     ]);
                 }
+            }
         }
 
         // @phpstan-ignore if.alwaysTrue
